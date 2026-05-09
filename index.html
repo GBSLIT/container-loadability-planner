@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Container Loadability 3D</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Dynamic loadability planner</p>
+          <h1>Container Loadability 3D</h1>
+          <p class="intro">Live CBM, loadability, weight, and packet-orientation planning for container loading.</p>
+        </div>
+        <div class="status-card">
+          <span id="statusLabel">Ready</span>
+          <strong id="statusValue">Edit inputs to calculate live</strong>
+        </div>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Live Calculator</h2>
+            </div>
+            <p class="hint">All CBM and loadability values are calculated from the container and packet inputs below.</p>
+          </section>
+
+          <section class="panel">
+            <h2>Container</h2>
+            <label>
+              Container type
+              <select id="containerType">
+                <option value="20ft">20 FT Container</option>
+                <option value="40ft">40 FT Container</option>
+                <option value="40hq">40 HQ Container</option>
+                <option value="45hq">45 HQ Container</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <div class="form-grid">
+              <label>
+                Length cm
+                <input id="containerLength" type="number" min="1" step="0.1">
+              </label>
+              <label>
+                Width cm
+                <input id="containerWidth" type="number" min="1" step="0.1">
+              </label>
+              <label>
+                Height cm
+                <input id="containerHeight" type="number" min="1" step="0.1">
+              </label>
+              <label>
+                Payload kg
+                <input id="containerPayload" type="number" min="1" step="1">
+              </label>
+            </div>
+            <label>
+              Margin <span id="marginLabel">0%</span>
+              <input id="margin" type="range" min="0" max="15" step="0.5" value="0">
+            </label>
+            <label class="check mixed-check">
+              <input id="smartMix" type="checkbox">
+              Mix carton sizes intelligently
+            </label>
+            <label class="check mixed-check">
+              <input id="mixed360" type="checkbox">
+              360 orientation when mixing
+            </label>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Packets</h2>
+              <button type="button" id="addPacketBtn">Add</button>
+            </div>
+            <div id="packetRows" class="packet-list"></div>
+          </section>
+        </aside>
+
+        <section class="main-stage">
+          <section class="metric-grid">
+            <article class="metric">
+              <span>Loadability</span>
+              <strong id="loadability">-</strong>
+              <small id="loadabilityNote">Enter packet data to calculate.</small>
+            </article>
+            <article class="metric">
+              <span>Container CBM</span>
+              <strong id="containerCbm">0</strong>
+              <small id="containerCbmNote">Internal container volume</small>
+            </article>
+            <article class="metric">
+              <span>Loaded CBM</span>
+              <strong id="loadedCbm">0</strong>
+              <small id="loadedCbmNote">Placed cargo volume</small>
+            </article>
+            <article class="metric">
+              <span>Placed Units</span>
+              <strong id="placedUnits">0 / 0</strong>
+              <small id="placedNote">Actual 3D estimate</small>
+            </article>
+            <article class="metric">
+              <span>Efficiency</span>
+              <strong id="efficiency">0%</strong>
+              <small id="efficiencyNote">Loaded volume / usable volume</small>
+            </article>
+          </section>
+
+          <section class="stage-grid">
+            <article class="viewer panel">
+              <div class="panel-title">
+                <h2>3D Loading View</h2>
+                <div class="tool-row">
+                  <button type="button" class="ghost" id="resetViewBtn">Reset view</button>
+                  <button type="button" class="ghost" id="toggleWireBtn">Usable box</button>
+                  <button type="button" class="ghost" id="toggleCapacityBtn">Show full capacity</button>
+                </div>
+              </div>
+              <div id="threeMount" class="three-mount">
+                <div class="three-message" id="threeMessage">Loading 3D engine...</div>
+              </div>
+              <div class="legend" id="legend"></div>
+            </article>
+
+            <article class="coach panel">
+              <h2>Efficiency Coach</h2>
+              <div id="coachList" class="coach-list"></div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Orientation Comparison</h2>
+              <select id="activePacket" aria-label="Focus packet"></select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Packet</th>
+                    <th>Orientation L x W x H</th>
+                    <th>Grid</th>
+                    <th>Loadability</th>
+                    <th>Efficiency</th>
+                    <th>Unused space</th>
+                  </tr>
+                </thead>
+                <tbody id="orientationBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Load Plan</h2>
+              <button type="button" class="ghost" id="exportBtn">Export CSV</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Packet</th>
+                    <th>Qty</th>
+                    <th>Best orientation</th>
+                    <th>CBM qty</th>
+                    <th>Loadable qty</th>
+                    <th>Weight</th>
+                  </tr>
+                </thead>
+                <tbody id="planBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <template id="packetTemplate">
+      <article class="packet-row">
+        <div class="row-title">
+          <input class="packet-name" type="text" aria-label="Packet name">
+          <button class="remove-btn" type="button" title="Remove packet">x</button>
+        </div>
+        <div class="form-grid compact">
+          <label>
+            L cm
+            <input class="packet-length" type="number" min="0.1" step="0.1">
+          </label>
+          <label>
+            W cm
+            <input class="packet-width" type="number" min="0.1" step="0.1">
+          </label>
+          <label>
+            H cm
+            <input class="packet-height" type="number" min="0.1" step="0.1">
+          </label>
+          <label>
+            Qty
+            <input class="packet-qty" type="number" min="1" step="1">
+          </label>
+          <label>
+            Kg
+            <input class="packet-weight" type="number" min="0" step="0.01">
+          </label>
+        </div>
+        <div class="check-row">
+          <label class="check">
+            <input class="packet-rotate" type="checkbox" checked>
+            Rotate on floor
+          </label>
+          <label class="check">
+            <input class="packet-flip" type="checkbox">
+            Allow side loading
+          </label>
+        </div>
+      </article>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
