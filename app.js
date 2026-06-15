@@ -1,8 +1,8 @@
 const CONTAINERS = {
-  "20ft": { name: "20 FT Container", length: 590, width: 235, height: 239, payload: 28200 },
-  "40ft": { name: "40 FT Container", length: 1203, width: 235, height: 239, payload: 26700 },
-  "40hq": { name: "40 HQ Container", length: 1203, width: 235, height: 267, payload: 26500 },
-  "45hq": { name: "45 HQ Container", length: 1356, width: 235, height: 267, payload: 27600 },
+  "20ft": { name: "20 FT Container", length: 589.5, width: 235.0, height: 239.2, payload: 28230 },
+  "40ft": { name: "40 FT Container", length: 1202.9, width: 235.0, height: 239.2, payload: 26700 },
+  "40hq": { name: "40 HQ Container", length: 1202.4, width: 235.0, height: 269.7, payload: 26460 },
+  "45hq": { name: "45 HQ Container", length: 1355.6, width: 235.2, height: 270.0, payload: 27700 },
 };
 
 const COLORS = ["#0f766e", "#2563eb", "#b45309", "#6d28d9", "#15803d", "#be123c", "#0369a1", "#854d0e"];
